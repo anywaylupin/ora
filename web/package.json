@@ -14,8 +14,8 @@
     "relay:watch": "relay-compiler --watch",
     "typecheck": "npm run relay && tsc -b",
     "lint": "eslint .",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "format": "prettier --config .prettierrc.json --write . ../README.md ../docs ../docker-compose.yml ../.github",
+    "format:check": "prettier --config .prettierrc.json --check . ../README.md ../docs ../docker-compose.yml ../.github",
     "schema": "node scripts/export-schema.js"
   },
   "dependencies": {

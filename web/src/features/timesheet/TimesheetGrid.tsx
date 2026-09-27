@@ -58,13 +58,6 @@ export function TimesheetGrid({ timesheet, workspaceId, isAdmin }: TimesheetGrid
   )
   const weekTotal = dayTotals.reduce((sum, minutes) => sum + minutes, 0)
 
-  /**
-   * Enter moves down a row in the same day, like a spreadsheet.
-   */
-  function focusCell(row: number, day: number) {
-    grid.current?.querySelector<HTMLInputElement>(`[data-cell="${row}:${day}"]`)?.focus()
-  }
-
   if (data.rows.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-zinc-300 p-8 text-center text-sm text-zinc-500 dark:border-zinc-700">
@@ -142,7 +135,7 @@ export function TimesheetGrid({ timesheet, workspaceId, isAdmin }: TimesheetGrid
                       editable={row.isEditable}
                       position={`${rowIndex}:${dayIndex}`}
                       onEnter={() => {
-                        focusCell(rowIndex + 1, dayIndex)
+                        focusCell(grid.current, rowIndex + 1, dayIndex)
                       }}
                       onStatus={setStatus}
                     />
@@ -183,6 +176,13 @@ export function TimesheetGrid({ timesheet, workspaceId, isAdmin }: TimesheetGrid
       </p>
     </div>
   )
+}
+
+/**
+ * Enter moves down a row in the same day, like a spreadsheet.
+ */
+function focusCell(grid: HTMLElement | null, row: number, day: number) {
+  grid?.querySelector<HTMLInputElement>(`[data-cell="${row}:${day}"]`)?.focus()
 }
 
 function isWeekend(day: string | undefined): boolean {
