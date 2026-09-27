@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Ora.Api.Tests/Ora.Api.Tests.csproj" />
+  <Project Path="Ora.Api/Ora.Api.csproj" />
+</Solution>
