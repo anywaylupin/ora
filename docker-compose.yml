@@ -1,5 +1,15 @@
 name: ora
 
+x-api: &api
+  image: ora-api
+  build:
+    context: .
+    dockerfile: api/Dockerfile
+  environment:
+    ASPNETCORE_ENVIRONMENT: Development
+    ConnectionStrings__Default: Server=sql;Database=Ora;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True
+    Cors__AllowedOrigins: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:8080}
+
 services:
   sql:
     image: mcr.microsoft.com/mssql/server:2025-latest
@@ -19,6 +29,32 @@ services:
       timeout: 5s
       retries: 30
       start_period: 20s
+
+  # Applies EF Core migrations once, then exits; the API waits for it.
+  migrate:
+    <<: *api
+    command: ['migrate']
+    depends_on:
+      sql:
+        condition: service_healthy
+
+  api:
+    <<: *api
+    ports:
+      - '5080:8080'
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  web:
+    build:
+      context: web
+      args:
+        VITE_GRAPHQL_URL: http://localhost:5080/graphql
+    ports:
+      - '8080:80'
+    depends_on:
+      - api
 
 volumes:
   sql-data:
