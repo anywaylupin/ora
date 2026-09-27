@@ -15,7 +15,8 @@
     "typecheck": "npm run relay && tsc -b",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "schema": "node scripts/export-schema.js"
   },
   "dependencies": {
     "react": "19.3.0",

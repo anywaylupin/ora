@@ -15,6 +15,11 @@ public sealed class OraClient(HttpClient http) : IDisposable
     public string? RefreshToken { get; private set; }
 
     /// <summary>
+    /// The email of the user this client signed up, once it has.
+    /// </summary>
+    public string Email { get; private set; } = string.Empty;
+
+    /// <summary>
     /// Registers and signs in a user with a unique email so tests never collide.
     /// </summary>
     public async Task<string> SignUpAndSignInAsync(string? email = null, string password = TestData.Password)
@@ -23,6 +28,7 @@ public sealed class OraClient(HttpClient http) : IDisposable
         var register = await http.PostAsJsonAsync("/auth/register", new { email, password });
         register.EnsureSuccessStatusCode();
         await SignInAsync(email, password);
+        Email = email;
         return email;
     }
 

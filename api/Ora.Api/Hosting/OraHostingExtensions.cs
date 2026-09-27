@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Ora.Api.Auth;
 using Ora.Api.Data;
 using Ora.Api.Domain;
 
@@ -75,6 +76,36 @@ public static class OraHostingExtensions
             .WithOrigins(origins)
             .AllowAnyHeader()
             .AllowAnyMethod()));
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Relay needs global object identification and connections; mutation conventions give every mutation a typed error list.
+    /// </summary>
+    public static WebApplicationBuilder AddOraGraphQL(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddScoped<WorkspaceAccess>();
+        builder.Services.AddOraDataLoaders();
+
+        builder
+            .AddGraphQL()
+            .AddAuthorization()
+            .AddOraTypes()
+            .AddGlobalObjectIdentification()
+            .AddMutationConventions(applyToAllMutations: true)
+            .AddPagingArguments()
+            .AddQueryContext()
+            .AddFiltering()
+            .AddSorting()
+            .ModifyPagingOptions(options =>
+            {
+                options.DefaultPageSize = 25;
+                options.MaxPageSize = 100;
+                options.IncludeTotalCount = true;
+            })
+            .ModifyRequestOptions(options =>
+                options.IncludeExceptionDetails = builder.Environment.IsDevelopment());
 
         return builder;
     }

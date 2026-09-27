@@ -8,7 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder
     .AddOraData()
     .AddOraAuth()
-    .AddOraCors();
+    .AddOraCors()
+    .AddOraGraphQL();
 
 var app = builder.Build();
 
@@ -22,7 +23,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapGroup("/auth").WithTags("Auth").MapIdentityApi<User>();
-app.MapGet("/", () => "Ora API");
+app.MapGraphQL().WithOptions(options => options.Tool.Enable = app.Environment.IsDevelopment());
 
-await app.RunAsync();
-return 0;
+return await app.RunWithGraphQLCommandsAsync(args);
