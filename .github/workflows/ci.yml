@@ -1,0 +1,111 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  api:
+    name: API
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: api/global.json
+
+      - name: Restore
+        run: |
+          dotnet tool restore
+          dotnet restore Ora.slnx
+
+      - name: Check formatting
+        run: dotnet format Ora.slnx --verify-no-changes --no-restore
+
+      - name: Build
+        run: dotnet build Ora.slnx --configuration Release --no-restore
+
+      - name: Check migrations match the model
+        run: dotnet ef migrations has-pending-model-changes --project Ora.Api --configuration Release --no-build
+
+      # Integration tests start SQL Server in Docker through Testcontainers.
+      - name: Test
+        run: dotnet test --solution Ora.slnx --configuration Release --no-build
+
+  web:
+    name: Web
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - run: npm ci
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+  schema:
+    name: GraphQL schema is current
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: api/global.json
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Export the schema
+        working-directory: web
+        run: npm run schema
+
+      - name: Fail if web/schema.graphql is out of date
+        run: |
+          if ! git diff --exit-code -- web/schema.graphql; then
+            echo "::error file=web/schema.graphql::The schema changed. Run 'npm run schema' in web/ and commit the result."
+            exit 1
+          fi
+
+  docker:
+    name: Docker images
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build images
+        run: docker compose build
+        env:
+          MSSQL_SA_PASSWORD: not-used-for-builds

@@ -1,0 +1,23 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <HotChocolateVersion>16.6.7</HotChocolateVersion>
+    <AspNetCoreVersion>10.0.12</AspNetCoreVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="GreenDonut.Data.EntityFramework" Version="$(HotChocolateVersion)" />
+    <PackageVersion Include="HotChocolate.AspNetCore" Version="$(HotChocolateVersion)" />
+    <PackageVersion Include="HotChocolate.AspNetCore.Authorization" Version="$(HotChocolateVersion)" />
+    <PackageVersion Include="HotChocolate.AspNetCore.CommandLine" Version="$(HotChocolateVersion)" />
+    <PackageVersion Include="HotChocolate.Data" Version="$(HotChocolateVersion)" />
+    <PackageVersion Include="HotChocolate.Data.EntityFramework" Version="$(HotChocolateVersion)" />
+    <PackageVersion Include="HotChocolate.Types.Analyzers" Version="$(HotChocolateVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="$(AspNetCoreVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="$(AspNetCoreVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(AspNetCoreVersion)" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="$(AspNetCoreVersion)" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(AspNetCoreVersion)" />
+    <PackageVersion Include="Testcontainers.MsSql" Version="4.15.0" />
+    <PackageVersion Include="xunit.v3" Version="4.0.1" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,51 @@
+{
+  "name": "ora-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "dev": "npm run relay && vite",
+    "build": "npm run relay && tsc -b && vite build",
+    "preview": "vite preview",
+    "relay": "relay-compiler",
+    "relay:watch": "relay-compiler --watch",
+    "typecheck": "npm run relay && tsc -b",
+    "lint": "eslint .",
+    "format": "prettier --config .prettierrc.json --write . ../README.md ../docs ../docker-compose.yml ../.github",
+    "format:check": "prettier --config .prettierrc.json --check . ../README.md ../docs ../docker-compose.yml ../.github",
+    "schema": "node scripts/export-schema.js"
+  },
+  "dependencies": {
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-relay": "21.0.1",
+    "react-router": "8.4.0",
+    "relay-runtime": "21.0.1"
+  },
+  "devDependencies": {
+    "@babel/core": "7.29.7",
+    "@eslint/js": "10.0.1",
+    "@rolldown/plugin-babel": "0.2.4",
+    "@tailwindcss/vite": "4.3.3",
+    "@types/node": "24.19.0",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.1",
+    "babel-plugin-relay": "21.0.1",
+    "eslint": "10.11.0",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "eslint-plugin-react-refresh": "0.5.7",
+    "globals": "17.12.0",
+    "prettier": "3.9.9",
+    "prettier-plugin-tailwindcss": "0.8.1",
+    "relay-compiler": "21.0.1",
+    "tailwindcss": "4.3.3",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.70.1",
+    "vite": "8.3.1"
+  }
+}
