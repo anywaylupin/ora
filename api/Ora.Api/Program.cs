@@ -1,13 +1,14 @@
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Ora.Api.Commands;
-using Ora.Api.Data;
+using Ora.Api.Domain;
+using Ora.Api.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<IDataScope, HttpContextDataScope>();
-builder.Services.AddDbContext<OraDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+builder
+    .AddOraData()
+    .AddOraAuth()
+    .AddOraCors();
 
 var app = builder.Build();
 
@@ -16,6 +17,11 @@ if (args is ["migrate", ..])
     return await DatabaseCommands.MigrateAsync(app.Services);
 }
 
+app.UseCors(OraHostingExtensions.CorsPolicy);
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapGroup("/auth").WithTags("Auth").MapIdentityApi<User>();
 app.MapGet("/", () => "Ora API");
 
 await app.RunAsync();
