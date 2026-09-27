@@ -26,7 +26,7 @@ public static partial class MembershipNode
             await membershipById.LoadAsync(id, cancellationToken), m => m.WorkspaceId, cancellationToken);
 
     public static async Task<User> GetUserAsync(
-        [Parent] Membership membership,
+        [Parent(requires: nameof(Membership.UserId))] Membership membership,
         IVisibleUserByIdDataLoader userById,
         CancellationToken cancellationToken) =>
         await userById.LoadRequiredAsync(membership.UserId, cancellationToken);

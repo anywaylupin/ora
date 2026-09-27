@@ -12,9 +12,117 @@ type Query {
 }
 
 type Mutation {
+  createClient(input: CreateClientInput!): CreateClientPayload!
+    @authorize
+    @cost(weight: "10")
+  updateClient(input: UpdateClientInput!): UpdateClientPayload!
+    @authorize
+    @cost(weight: "10")
+  archiveClient(input: ArchiveClientInput!): ArchiveClientPayload!
+    @authorize
+    @cost(weight: "10")
+  restoreClient(input: RestoreClientInput!): RestoreClientPayload!
+    @authorize
+    @cost(weight: "10")
+  createProject(input: CreateProjectInput!): CreateProjectPayload!
+    @authorize
+    @cost(weight: "10")
+  updateProject(input: UpdateProjectInput!): UpdateProjectPayload!
+    @authorize
+    @cost(weight: "10")
+  archiveProject(input: ArchiveProjectInput!): ArchiveProjectPayload!
+    @authorize
+    @cost(weight: "10")
+  restoreProject(input: RestoreProjectInput!): RestoreProjectPayload!
+    @authorize
+    @cost(weight: "10")
+  assignProjectMember(input: AssignProjectMemberInput!): AssignProjectMemberPayload!
+    @authorize
+    @cost(weight: "10")
+  unassignProjectMember(input: UnassignProjectMemberInput!): UnassignProjectMemberPayload!
+    @authorize
+    @cost(weight: "10")
+  upsertTimeEntry(input: UpsertTimeEntryInput!): UpsertTimeEntryPayload!
+    @authorize
+    @cost(weight: "10")
   createWorkspace(input: CreateWorkspaceInput!): CreateWorkspacePayload!
     @authorize
     @cost(weight: "10")
+}
+
+type AccessDeniedError implements Error {
+  message: String!
+}
+
+type ArchiveClientPayload {
+  client: Client
+  errors: [ArchiveClientError!]
+}
+
+type ArchiveProjectPayload {
+  project: Project
+  errors: [ArchiveProjectError!]
+}
+
+type AssignProjectMemberPayload {
+  project: Project
+  errors: [AssignProjectMemberError!]
+}
+
+type Client implements Node {
+  id: ID!
+  projects(
+    "Returns the first _n_ elements from the list."
+    first: Int
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+    "Returns the last _n_ elements from the list."
+    last: Int
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+    where: ProjectFilterInput @cost(weight: "10")
+    order: [ProjectSortInput!] @cost(weight: "10")
+  ): ProjectsConnection
+    @listSize(
+      assumedSize: 100
+      slicingArguments: ["first", "last"]
+      slicingArgumentDefaultValue: 25
+      sizedFields: ["edges", "nodes"]
+      requireOneSlicingArgument: false
+    )
+    @cost(weight: "10")
+  name: String!
+  isArchived: Boolean!
+}
+
+"A connection to a list of items."
+type ClientsConnection {
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "A list of edges."
+  edges: [ClientsEdge!]
+  "A flattened list of the nodes."
+  nodes: [Client!]
+  "Identifies the total count of items in the connection."
+  totalCount: Int! @cost(weight: "10")
+}
+
+"An edge in a connection."
+type ClientsEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: Client!
+}
+
+type CreateClientPayload {
+  client: Client
+  errors: [CreateClientError!]
+}
+
+type CreateProjectPayload {
+  project: Project
+  errors: [CreateProjectError!]
 }
 
 type CreateWorkspacePayload {
@@ -48,6 +156,10 @@ type Membership implements Node {
   role: MembershipRole!
 }
 
+type NotFoundError implements Error {
+  message: String!
+}
+
 "Information about pagination in a connection."
 type PageInfo {
   "Indicates whether more edges exist following the set defined by the clients arguments."
@@ -58,6 +170,98 @@ type PageInfo {
   startCursor: String
   "When paginating forwards, the cursor to continue."
   endCursor: String
+}
+
+type Project implements Node {
+  id: ID!
+  client: Client! @cost(weight: "10")
+  assignees: [User!]! @cost(weight: "10")
+  name: String!
+  color: String!
+  isArchived: Boolean!
+}
+
+type ProjectNotAssignedError implements Error {
+  message: String!
+}
+
+"A connection to a list of items."
+type ProjectsConnection {
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "A list of edges."
+  edges: [ProjectsEdge!]
+  "A flattened list of the nodes."
+  nodes: [Project!]
+  "Identifies the total count of items in the connection."
+  totalCount: Int! @cost(weight: "10")
+}
+
+"An edge in a connection."
+type ProjectsEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: Project!
+}
+
+type RestoreClientPayload {
+  client: Client
+  errors: [RestoreClientError!]
+}
+
+type RestoreProjectPayload {
+  project: Project
+  errors: [RestoreProjectError!]
+}
+
+type TimeEntry implements Node {
+  id: ID!
+  project: Project! @cost(weight: "10")
+  user: User! @cost(weight: "10")
+  date: LocalDate!
+  durationMinutes: Int!
+  note: String
+}
+
+type Timesheet {
+  weekStart: LocalDate!
+  rows: [TimesheetRow!]!
+  days: [LocalDate!]!
+}
+
+type TimesheetCell implements Node {
+  id: ID!
+  date: LocalDate!
+  durationMinutes: Int!
+  note: String
+  entry: TimeEntry
+}
+
+type TimesheetRow {
+  project: Project!
+  isEditable: Boolean!
+  cells: [TimesheetCell!]!
+}
+
+type UnassignProjectMemberPayload {
+  project: Project
+  errors: [UnassignProjectMemberError!]
+}
+
+type UpdateClientPayload {
+  client: Client
+  errors: [UpdateClientError!]
+}
+
+type UpdateProjectPayload {
+  project: Project
+  errors: [UpdateProjectError!]
+}
+
+type UpsertTimeEntryPayload {
+  timesheetCell: TimesheetCell
+  errors: [UpsertTimeEntryError!]
 }
 
 type User implements Node {
@@ -113,6 +317,47 @@ type Workspace implements Node {
       requireOneSlicingArgument: false
     )
     @cost(weight: "10")
+  clients(
+    "Returns the first _n_ elements from the list."
+    first: Int
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+    "Returns the last _n_ elements from the list."
+    last: Int
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+    where: ClientFilterInput @cost(weight: "10")
+    order: [ClientSortInput!] @cost(weight: "10")
+  ): ClientsConnection
+    @listSize(
+      assumedSize: 100
+      slicingArguments: ["first", "last"]
+      slicingArgumentDefaultValue: 25
+      sizedFields: ["edges", "nodes"]
+      requireOneSlicingArgument: false
+    )
+    @cost(weight: "10")
+  projects(
+    "Returns the first _n_ elements from the list."
+    first: Int
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+    "Returns the last _n_ elements from the list."
+    last: Int
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+    where: ProjectFilterInput @cost(weight: "10")
+    order: [ProjectSortInput!] @cost(weight: "10")
+  ): ProjectsConnection
+    @listSize(
+      assumedSize: 100
+      slicingArguments: ["first", "last"]
+      slicingArgumentDefaultValue: 25
+      sizedFields: ["edges", "nodes"]
+      requireOneSlicingArgument: false
+    )
+    @cost(weight: "10")
+  timesheet(weekStart: LocalDate!): Timesheet! @cost(weight: "10")
   name: String!
 }
 
@@ -145,10 +390,118 @@ interface Node {
   id: ID!
 }
 
+union ArchiveClientError = NotFoundError | AccessDeniedError
+
+union ArchiveProjectError = NotFoundError | AccessDeniedError
+
+union AssignProjectMemberError = NotFoundError | AccessDeniedError
+
+union CreateClientError = ValidationError | NotFoundError | AccessDeniedError
+
+union CreateProjectError = ValidationError | NotFoundError | AccessDeniedError
+
 union CreateWorkspaceError = ValidationError
+
+union RestoreClientError = NotFoundError | AccessDeniedError
+
+union RestoreProjectError = NotFoundError | AccessDeniedError
+
+union UnassignProjectMemberError = NotFoundError | AccessDeniedError
+
+union UpdateClientError = ValidationError | NotFoundError | AccessDeniedError
+
+union UpdateProjectError = ValidationError | NotFoundError | AccessDeniedError
+
+union UpsertTimeEntryError =
+  | ValidationError
+  | NotFoundError
+  | ProjectNotAssignedError
+
+input ArchiveClientInput {
+  id: ID!
+}
+
+input ArchivedFilterInput {
+  eq: Boolean @cost(weight: "10")
+}
+
+input ArchiveProjectInput {
+  id: ID!
+}
+
+input AssignProjectMemberInput {
+  projectId: ID!
+  userId: ID!
+}
+
+input ClientFilterInput {
+  name: NameFilterInput
+  isArchived: ArchivedFilterInput
+}
+
+input ClientSortInput {
+  name: SortEnumType @cost(weight: "10")
+}
+
+input CreateClientInput {
+  workspaceId: ID!
+  name: String!
+}
+
+input CreateProjectInput {
+  clientId: ID!
+  name: String!
+  color: String!
+}
 
 input CreateWorkspaceInput {
   name: String!
+}
+
+input NameFilterInput {
+  eq: String @cost(weight: "10")
+  contains: String @cost(weight: "10")
+}
+
+input ProjectFilterInput {
+  name: NameFilterInput
+  isArchived: ArchivedFilterInput
+}
+
+input ProjectSortInput {
+  name: SortEnumType @cost(weight: "10")
+}
+
+input RestoreClientInput {
+  id: ID!
+}
+
+input RestoreProjectInput {
+  id: ID!
+}
+
+input UnassignProjectMemberInput {
+  projectId: ID!
+  userId: ID!
+}
+
+input UpdateClientInput {
+  id: ID!
+  name: String!
+}
+
+input UpdateProjectInput {
+  id: ID!
+  clientId: ID!
+  name: String!
+  color: String!
+}
+
+input UpsertTimeEntryInput {
+  projectId: ID!
+  date: LocalDate!
+  durationMinutes: Int!
+  note: String
 }
 
 "Defines when a policy shall be executed."
@@ -166,6 +519,15 @@ enum MembershipRole {
   MANAGER
   ADMIN
 }
+
+enum SortEnumType {
+  ASC
+  DESC
+}
+
+"The `LocalDate` scalar type represents a date without time or time zone information."
+scalar LocalDate
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/local-date.html")
 
 "The authorize directive."
 directive @authorize(

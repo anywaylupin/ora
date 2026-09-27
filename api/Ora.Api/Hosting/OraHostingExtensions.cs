@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Ora.Api.Auth;
 using Ora.Api.Data;
 using Ora.Api.Domain;
+using Ora.Api.GraphQL.Timesheets;
 
 namespace Ora.Api.Hosting;
 
@@ -83,9 +84,13 @@ public static class OraHostingExtensions
     /// <summary>
     /// Relay needs global object identification and connections; mutation conventions give every mutation a typed error list.
     /// </summary>
+    /// <remarks>
+    /// The default field cost limit of 1,000 rejects a page of members with their users, so it is raised while still capping runaway nesting.
+    /// </remarks>
     public static WebApplicationBuilder AddOraGraphQL(this WebApplicationBuilder builder)
     {
         builder.Services.AddScoped<WorkspaceAccess>();
+        builder.Services.AddScoped<TimesheetService>();
         builder.Services.AddOraDataLoaders();
 
         builder
@@ -93,6 +98,7 @@ public static class OraHostingExtensions
             .AddAuthorization()
             .AddOraTypes()
             .AddGlobalObjectIdentification()
+            .AddNodeIdValueSerializer<TimesheetCellIdSerializer>()
             .AddMutationConventions(applyToAllMutations: true)
             .AddPagingArguments()
             .AddQueryContext()
@@ -104,6 +110,7 @@ public static class OraHostingExtensions
                 options.MaxPageSize = 100;
                 options.IncludeTotalCount = true;
             })
+            .ModifyCostOptions(options => options.MaxFieldCost = 10_000)
             .ModifyRequestOptions(options =>
                 options.IncludeExceptionDetails = builder.Environment.IsDevelopment());
 

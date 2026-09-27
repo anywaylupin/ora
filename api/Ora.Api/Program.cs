@@ -18,6 +18,11 @@ if (args is ["migrate", ..])
     return await DatabaseCommands.MigrateAsync(app.Services);
 }
 
+if (args is ["seed", ..])
+{
+    return await SeedCommand.RunAsync(app.Services);
+}
+
 app.UseCors(OraHostingExtensions.CorsPolicy);
 app.UseAuthentication();
 app.UseAuthorization();
